@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static '/bootstrap/css/bootstrap.min.css' %}">
+    <script src="{% static '/bootstrap/js/jquery-3.6.0.min.js' %}"></script>
+</head>
+<body>
+
+<div>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Posts</a>
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item ">user : {{user_id}}</li>
+        </ul>
+    </nav>
+    <br>
+    <div style="display :flex;   flex-direction: row; flex-wrap: wrap;">
+        {% for post in posts %}
+        <div class="card ml-2 me-2 mb-4" style="width: 18rem;">
+            <div class="card-body me-2 ml-2">
+                <h5 class="card-title">{{post.title}}</h5>
+                <p class="card-text">{{post.post}}</p>
+                <div style="display:flex">
+                    {% if post.type == 1 %}
+                    <img style="width:40px" id="like-button-{{post.id}}" src="{% static 'img/like-button_highlight.png' %}"></img>
+                    {% else %}
+                    <img style="width:40px" id="like-button-{{post.id}}" src="{% static 'img/like-button.png' %}"></img>
+                    {% endif %}
+                    <p id="up-{{post.id}}" style="margin:10px">{{post.up_vote}}</p>
+                    {% if post.type == 0 %}
+                    <img style="width:40px " id="dislike-button-{{post.id}}" src="{% static 'img/dislike-button_highlight.png' %}"></img>
+                    {% else %}
+                    <img style="width:40px " id="dislike-button-{{post.id}}" src="{% static 'img/dislike-button.png' %}"></img>
+                    {% endif %}
+                    <p id="down-{{post.id}}" style="margin:10px">{{post.down_vote}}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<script>
+$(document).ready(function(){
+{% for post in posts %}
+  $("#like-button-{{post.id}}").click(function(){
+    $.ajax({
+        type: 'POST',
+        url: '/vote/{{user_id}}',
+        data: {
+          postid: {{post.id}},
+          csrfmiddlewaretoken: '{{csrf_token}}',
+          vote:'up_vote'
+        },
+        success: function (json) {
+          console.log(json)
+          if (json.length < 1 || json == undefined) {
+            //empty
+          }
+          document.getElementById("up-{{post.id}}").innerHTML = json['up']
+          document.getElementById("down-{{post.id}}").innerHTML = json['down']
+
+          if (json['remove'] == 'none') {
+            $("#like-button-{{post.id}}").attr("src","{% static 'img/like-button.png' %}");
+          } else {
+            $("#like-button-{{post.id}}").attr("src","{% static 'img/like-button_highlight.png' %}");
+          }
+          //$("#like-button-{{post.id}}").attr("src","{% static 'img/like-button_highlight.png' %}");
+          //$("#dislike-button-{{post.id}}").attr("src","{% static 'img/dislike-button.png' %}");
+        },
+        error: function (xhr, errmsg, err) {}
+      })
+  });
+  $("#dislike-button-{{post.id}}").click(function(){
+    $.ajax({
+        type: 'POST',
+        url: '/vote/{{user_id}}',
+        data: {
+          postid: {{post.id}},
+          csrfmiddlewaretoken: '{{csrf_token}}',
+          vote:'down_vote'
+        },
+        success: function (json) {
+          console.log(json)
+          if (json.length < 1 || json == undefined) {
+            //empty
+          }
+          document.getElementById("down-{{post.id}}").innerHTML = json['down']
+          document.getElementById("up-{{post.id}}").innerHTML = json['up']
+
+          if (json['remove'] == 'none') {
+            $("#dislike-button-{{post.id}}").attr("src","{% static 'img/dislike-button.png' %}");
+          } else {
+            $("#dislike-button-{{post.id}}").attr("src","{% static 'img/dislike-button_highlight.png' %}");
+          }
+
+          //$("#dislike-button-{{post.id}}").attr("src","{% static 'img/dislike-button_highlight.png' %}");
+          //$("#like-button-{{post.id}}").attr("src","{% static 'img/dislike-button.png' %}");
+
+        },
+        error: function (xhr, errmsg, err) {}
+      })
+  });
+{% endfor %}
+});
+
+</script>
+</body>
+
+</html>
