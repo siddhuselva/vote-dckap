@@ -87,12 +87,9 @@ def vote(request, user_id):
                 post_vote.down_vote = post_vote.down_vote - 1
                 post_vote.save()
 
-                # Update Vote
-
                 q.vote = True
                 q.save(update_fields=['vote'])
 
-                # Return post_voted votes
                 post_vote.refresh_from_db()
                 up = post_vote.up_vote
                 down = post_vote.down_vote
@@ -128,4 +125,4 @@ def vote(request, user_id):
     down_count = post_vote.down_vote
 
     return JsonResponse({'up': up_count, 'down': down_count})
-    # return JsonResponse({"up": 20, "down": 21})
+
